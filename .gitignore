@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local memory store (never commit real memories)
+.memory.json
+agent-memory/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
