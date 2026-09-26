@@ -75,10 +75,13 @@ class MemoryStore:
             self._save()
         return results
 
-    def list_all(self, project: Optional[str] = None) -> list:
+    def list_all(self, project: Optional[str] = None,
+                 tag: Optional[str] = None) -> list:
         items = self._data["memories"]
         if project:
             items = [m for m in items if m.get("project") == project]
+        if tag:
+            items = [m for m in items if tag in (m.get("tags") or [])]
         return list(reversed(items))
 
     def forget(self, memory_id: int) -> bool:

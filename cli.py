@@ -42,6 +42,7 @@ def main():
 
     l = sub.add_parser("list", help="list memories")
     l.add_argument("--project", default=None)
+    l.add_argument("--tag", default=None)
 
     f = sub.add_parser("forget", help="delete a memory by id")
     f.add_argument("id", type=int)
@@ -61,9 +62,11 @@ def main():
         if not hits:
             print("(no memories found)")
     elif args.cmd == "list":
-        items = store.list_all(project=project)
+        tag = getattr(args, "tag", None)
+        items = store.list_all(project=project, tag=tag)
         for m in items:
-            print(f"[{m['id']}] ({m['project']}) {m['text']}")
+            tags = (" [" + ",".join(m["tags"]) + "]") if m.get("tags") else ""
+            print(f"[{m['id']}] ({m['project']}){tags} {m['text']}")
         if not items:
             print("(empty)")
     elif args.cmd == "forget":
