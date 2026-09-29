@@ -39,6 +39,7 @@ def main():
     rc.add_argument("query")
     rc.add_argument("--project", default=None)
     rc.add_argument("--limit", type=int, default=5)
+    rc.add_argument("--tag", default=None)
 
     l = sub.add_parser("list", help="list memories")
     l.add_argument("--project", default=None)
@@ -56,7 +57,8 @@ def main():
         print(json.dumps({"saved": True, "id": e["id"], "project": project},
                          ensure_ascii=False))
     elif args.cmd == "recall":
-        hits = store.recall(args.query, project=project, limit=args.limit)
+        tag = getattr(args, "tag", None)
+        hits = store.recall(args.query, project=project, limit=args.limit, tag=tag)
         for h in hits:
             print(f"[{h['id']}] ({h['project']}) {h['text']}")
         if not hits:

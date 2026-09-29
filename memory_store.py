@@ -55,11 +55,13 @@ class MemoryStore:
         return entry
 
     def recall(self, query: str, project: Optional[str] = None,
-               limit: int = 5) -> list:
+               limit: int = 5, tag: Optional[str] = None) -> list:
         q = query.lower()
         scored = []
         for m in self._data["memories"]:
             if project and m.get("project") != project:
+                continue
+            if tag and tag not in (m.get("tags") or []):
                 continue
             text = m["text"].lower()
             score = sum(1 for w in q.split() if w in text)
