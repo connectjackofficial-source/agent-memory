@@ -72,14 +72,12 @@ Everything lives in one file:
 Inspect it, back it up, or check it into a private dotfiles repo. No
 database, no cloud.
 
-## Layout
+## Tags
 
-```
-agent-memory/
-├── memory_store.py   # file-backed key/fact store (no deps)
-├── mcp_server.py    # MCP tool layer
-├── cli.py           # command line
-└── README.md
+Facts can carry tags. Filter them back:
+
+```bash
+python cli.py list --tag build
 ```
 
 ## License
