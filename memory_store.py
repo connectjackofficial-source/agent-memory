@@ -95,3 +95,11 @@ class MemoryStore:
         if changed:
             self._save()
         return changed
+
+    def clear_all(self, project: Optional[str] = None):
+        if project:
+            self._data["memories"] = [
+                m for m in self._data["memories"] if m.get("project") != project]
+        else:
+            self._data["memories"] = []
+        self._save()
