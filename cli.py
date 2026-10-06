@@ -48,6 +48,9 @@ def main():
     f = sub.add_parser("forget", help="delete a memory by id")
     f.add_argument("id", type=int)
 
+    sub.add_parser("export", help="export all memories as JSON")
+    sub.add_parser("import", help="import memories from JSON on stdin")
+
     args = ap.parse_args()
     store = MemoryStore()
     project = getattr(args, "project", None) or project_from_git()
@@ -74,6 +77,11 @@ def main():
     elif args.cmd == "forget":
         ok = store.forget(args.id)
         print("deleted" if ok else "not found")
+    elif args.cmd == "export":
+        print(store.export_json())
+    elif args.cmd == "import":
+        store.import_json(sys.stdin.read())
+        print("imported")
 
 
 if __name__ == "__main__":
