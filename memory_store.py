@@ -103,3 +103,13 @@ class MemoryStore:
         else:
             self._data["memories"] = []
         self._save()
+
+    def export_json(self) -> str:
+        return json.dumps(self._data, indent=2, ensure_ascii=False)
+
+    def import_json(self, payload: str):
+        data = json.loads(payload)
+        if "memories" not in data:
+            raise ValueError("payload must contain 'memories'")
+        self._data["memories"].extend(data["memories"])
+        self._save()
