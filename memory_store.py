@@ -19,6 +19,14 @@ def default_path() -> Path:
     return Path.home() / ".agent-memory" / "memory.json"
 
 
+def _subsequence_score(text: str, query: str) -> int:
+    """Return a small score when *query* appears as a character subsequence
+    of *text* (useful for abbreviations and typos). 0 when it does not."""
+    it = iter(text)
+    matched = all(ch in it for ch in query)
+    return 1 if matched else 0
+
+
 class MemoryStore:
     def __init__(self, path: Optional[Path] = None):
         self.path = Path(path) if path else default_path()
@@ -55,7 +63,8 @@ class MemoryStore:
         return entry
 
     def recall(self, query: str, project: Optional[str] = None,
-               limit: int = 5, tag: Optional[str] = None) -> list:
+               limit: int = 5, tag: Optional[str] = None,
+               fuzzy: bool = False) -> list:
         q = query.lower()
         scored = []
         for m in self._data["memories"]:
@@ -67,6 +76,8 @@ class MemoryStore:
             score = sum(1 for w in q.split() if w in text)
             if q in text:
                 score += 2
+            if fuzzy:
+                score += _subsequence_score(text, q)
             if score > 0:
                 scored.append((score, m))
         scored.sort(key=lambda x: (-x[0], -x[1]["hits"]))
@@ -113,3 +124,17 @@ class MemoryStore:
             raise ValueError("payload must contain 'memories'")
         self._data["memories"].extend(data["memories"])
         self._save()
+
+    def stats(self) -> dict:
+        items = self._data["memories"]
+        by_project = {}
+        total_hits = 0
+        for m in items:
+            proj = m.get("project", "default")
+            by_project[proj] = by_project.get(proj, 0) + 1
+            total_hits += m.get("hits", 0)
+        return {
+            "total": len(items),
+            "by_project": by_project,
+            "total_hits": total_hits,
+        }

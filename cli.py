@@ -40,6 +40,8 @@ def main():
     rc.add_argument("--project", default=None)
     rc.add_argument("--limit", type=int, default=5)
     rc.add_argument("--tag", default=None)
+    rc.add_argument("--fuzzy", action="store_true",
+                    help="match abbreviations/typos as subsequences")
 
     l = sub.add_parser("list", help="list memories")
     l.add_argument("--project", default=None)
@@ -50,6 +52,7 @@ def main():
 
     sub.add_parser("export", help="export all memories as JSON")
     sub.add_parser("import", help="import memories from JSON on stdin")
+    sub.add_parser("stats", help="show memory statistics")
 
     args = ap.parse_args()
     store = MemoryStore()
@@ -61,7 +64,9 @@ def main():
                          ensure_ascii=False))
     elif args.cmd == "recall":
         tag = getattr(args, "tag", None)
-        hits = store.recall(args.query, project=project, limit=args.limit, tag=tag)
+        fuzzy = getattr(args, "fuzzy", False)
+        hits = store.recall(args.query, project=project, limit=args.limit,
+                            tag=tag, fuzzy=fuzzy)
         for h in hits:
             print(f"[{h['id']}] ({h['project']}) {h['text']}")
         if not hits:
@@ -82,6 +87,8 @@ def main():
     elif args.cmd == "import":
         store.import_json(sys.stdin.read())
         print("imported")
+    elif args.cmd == "stats":
+        print(json.dumps(store.stats(), indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
