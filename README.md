@@ -54,6 +54,23 @@ python cli.py list --project myapp
 python cli.py forget 1727000000000
 ```
 
+## Fuzzy search
+
+Abbreviations and typos still hit. `--fuzzy` matches the query as a character
+subsequence of the stored text:
+
+```bash
+python cli.py recall "uspm" --fuzzy   # -> "use pnpm"
+python cli.py recall "dep" --fuzzy    # -> "deployment"
+```
+
+## Stats
+
+```bash
+python cli.py stats
+# {"total": 42, "by_project": {"myapp": 30, "web": 12}, "total_hits": 8}
+```
+
 ## How the agent uses it
 
 1. You say: *"by the way, we use pnpm"* — the agent calls `remember`.
