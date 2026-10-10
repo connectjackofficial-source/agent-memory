@@ -5,6 +5,7 @@
 - [x] fuzzy subsequence search
 - [x] stats command
 - [x] JSON export / import
+- [x] dedupe (remove exact duplicates)
 - [ ] vector (embedding) retrieval
-- [ ] memory compaction (merge duplicate facts)
+- [ ] memory compaction (merge near-duplicate facts)
 - [ ] per-fact TTL / expiry

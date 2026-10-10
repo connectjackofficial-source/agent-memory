@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [1.2.0] - 2026-10-10
+
+### Added
+- `dedupe()` — remove exact-duplicate memories (same project + text)
+- `dedupe` CLI command with `--project` filter
+- `stats` now reports per-tag counts
+
 ## [1.1.0] - 2026-10-08
 
 ### Added
