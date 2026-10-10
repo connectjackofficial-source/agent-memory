@@ -115,6 +115,27 @@ class MemoryStore:
             self._data["memories"] = []
         self._save()
 
+    def dedupe(self, project: Optional[str] = None) -> int:
+        """Remove exact-duplicate memories (same project + same text),
+        keeping the earliest. Returns the number of entries removed."""
+        seen = set()
+        kept = []
+        removed = 0
+        for m in self._data["memories"]:
+            if project and m.get("project") != project:
+                kept.append(m)
+                continue
+            key = (m.get("project", "default"), m.get("text", "").strip())
+            if key in seen:
+                removed += 1
+                continue
+            seen.add(key)
+            kept.append(m)
+        self._data["memories"] = kept
+        if removed:
+            self._save()
+        return removed
+
     def export_json(self) -> str:
         return json.dumps(self._data, indent=2, ensure_ascii=False)
 
@@ -128,13 +149,17 @@ class MemoryStore:
     def stats(self) -> dict:
         items = self._data["memories"]
         by_project = {}
+        by_tag = {}
         total_hits = 0
         for m in items:
             proj = m.get("project", "default")
             by_project[proj] = by_project.get(proj, 0) + 1
             total_hits += m.get("hits", 0)
+            for t in m.get("tags") or []:
+                by_tag[t] = by_tag.get(t, 0) + 1
         return {
             "total": len(items),
             "by_project": by_project,
+            "by_tag": by_tag,
             "total_hits": total_hits,
         }
