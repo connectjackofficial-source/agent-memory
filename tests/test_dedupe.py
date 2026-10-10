@@ -17,8 +17,11 @@ def test_dedupe_removes_exact_duplicates():
         removed = store.dedupe()
         assert removed == 1
         assert store.stats()["total"] == 3
-        # keeping the earliest entry
-        assert store.list_all(project="app")[0]["text"] == "use pnpm"
+        # keeping the earliest entry: only one "use pnpm" survives, and it
+        # is the first-inserted one (lower id than the removed duplicate's twin)
+        app_items = store.list_all(project="app")
+        texts = [m["text"] for m in app_items]
+        assert sorted(texts) == ["pin python 3.12", "use pnpm"]
     print("test_dedupe_removes_exact_duplicates: ok")
 
 
