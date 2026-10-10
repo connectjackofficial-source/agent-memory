@@ -68,7 +68,18 @@ python cli.py recall "dep" --fuzzy    # -> "deployment"
 
 ```bash
 python cli.py stats
-# {"total": 42, "by_project": {"myapp": 30, "web": 12}, "total_hits": 8}
+# {"total": 42, "by_project": {"myapp": 30, "web": 12}, "by_tag": {"build": 9}, "total_hits": 8}
+```
+
+## Dedupe
+
+Accidentally saved the same fact twice? Remove exact duplicates (same
+project + same text), keeping the earliest:
+
+```bash
+python cli.py dedupe             # across all projects
+python cli.py dedupe --project myapp   # one project only
+# {"deduplicated": true, "removed": 3}
 ```
 
 ## How the agent uses it
