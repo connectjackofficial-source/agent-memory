@@ -50,6 +50,9 @@ def main():
     f = sub.add_parser("forget", help="delete a memory by id")
     f.add_argument("id", type=int)
 
+    dd = sub.add_parser("dedupe", help="remove exact-duplicate memories")
+    dd.add_argument("--project", default=None)
+
     sub.add_parser("export", help="export all memories as JSON")
     sub.add_parser("import", help="import memories from JSON on stdin")
     sub.add_parser("stats", help="show memory statistics")
@@ -82,6 +85,10 @@ def main():
     elif args.cmd == "forget":
         ok = store.forget(args.id)
         print("deleted" if ok else "not found")
+    elif args.cmd == "dedupe":
+        removed = store.dedupe(project=project)
+        print(json.dumps({"deduplicated": True, "removed": removed},
+                         ensure_ascii=False))
     elif args.cmd == "export":
         print(store.export_json())
     elif args.cmd == "import":
