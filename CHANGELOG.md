@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [1.3.0] - 2026-10-10
+
+### Added
+- `suggest_tags()` — auto-tag memories from distinctive words
+- Tag-suggestion tests and corrected dedupe ordering assertion
+
 ## [1.2.0] - 2026-10-10
 
 ### Added

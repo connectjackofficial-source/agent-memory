@@ -108,6 +108,15 @@ Facts can carry tags. Filter them back:
 python cli.py list --tag build
 ```
 
+Don't want to type tags by hand? `suggest_tags()` extracts the most
+distinctive words from the text so you can tag on the way in:
+
+```python
+from memory_store import suggest_tags
+suggest_tags("deploy uses docker compose with nginx")
+# ["deploy", "docker", "compose"]
+```
+
 ## License
 
 [MIT](LICENSE)
