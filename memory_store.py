@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Optional
 
@@ -17,6 +19,26 @@ def default_path() -> Path:
     if root:
         return Path(root) / "memory.json"
     return Path.home() / ".agent-memory" / "memory.json"
+
+
+# Words that carry no tagging signal.
+_STOPWORDS = {
+    "the", "a", "an", "and", "or", "of", "to", "in", "for", "on", "with",
+    "is", "are", "be", "it", "this", "that", "these", "those", "you", "your",
+    "our", "we", "i", "as", "at", "by", "from", "about", "if", "not", "can",
+    "will", "should", "would", "could", "do", "does", "did", "how", "what",
+    "when", "where", "why", "use", "using", "used", "remember", "please",
+    "make", "sure", "need", "needs", "want", "like", "just", "also", "have",
+    "has", "had", "been", "was", "were", "than", "then", "there", "their",
+    "they", "them", "him", "her", "his", "its", "me", "my", "so", "very",
+}
+
+
+def suggest_tags(text: str, top_n: int = 3) -> list:
+    """Suggest memory tags from the most distinctive words in *text*."""
+    words = re.findall(r"[a-z0-9]+", text.lower())
+    counts = Counter(w for w in words if w not in _STOPWORDS and len(w) > 2)
+    return [w for w, _ in counts.most_common(top_n)]
 
 
 def _subsequence_score(text: str, query: str) -> int:
