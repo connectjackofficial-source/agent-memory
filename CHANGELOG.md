@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## [1.4.0] - 2026-10-13
+
+### Added
+- `search()` — precise AND-search where every query word must match
+  (substring or fuzzy subsequence), with `project` and `since_days`
+  filters, distinct from the OR-style `recall()`
+- `tests/test_search.py` covering AND semantics, fuzzy matching,
+  project scoping and recency filtering
+
 ## [1.3.0] - 2026-10-10
 
 ### Added

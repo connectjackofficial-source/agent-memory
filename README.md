@@ -64,6 +64,21 @@ python cli.py recall "uspm" --fuzzy   # -> "use pnpm"
 python cli.py recall "dep" --fuzzy    # -> "deployment"
 ```
 
+## Precise search
+
+`recall` is OR-style: any matching word scores. When you need *every* word
+to match — "cache" **and** "billing", not just one — use `search()`:
+
+```python
+from memory_store import MemoryStore
+store = MemoryStore()
+store.search("cache billing", project="billing", since_days=30)
+```
+
+`search()` requires each query word to appear in the text (substring, or
+subsequence when `fuzzy=True`), scopes by project, and can restrict to
+recent memories with `since_days`.
+
 ## Stats
 
 ```bash
