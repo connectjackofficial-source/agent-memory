@@ -110,6 +110,51 @@ class MemoryStore:
             self._save()
         return results
 
+    def search(self, query: str, project: Optional[str] = None,
+               limit: int = 5, since_days: Optional[int] = None,
+               fuzzy: bool = True) -> list:
+        """AND-search: *every* query word must match the memory text.
+
+        Unlike :meth:`recall` (any-word OR scoring), search is precise —
+        every word must appear as a substring, or as a character
+        subsequence when *fuzzy* is enabled. Optionally restrict to
+        memories created within the last *since_days* days.
+        """
+        words = [w for w in query.lower().split() if w]
+        if not words:
+            return []
+        cutoff = None
+        if since_days is not None:
+            cutoff = time.time() - since_days * 86400
+        scored = []
+        for m in self._data["memories"]:
+            if project and m.get("project") != project:
+                continue
+            if cutoff is not None:
+                created = m.get("created", "")
+                try:
+                    ts = time.mktime(
+                        time.strptime(created, "%Y-%m-%dT%H:%M:%S"))
+                except ValueError:
+                    ts = 0
+                if ts < cutoff:
+                    continue
+            text = m["text"].lower()
+            score = 0
+            matched = True
+            for w in words:
+                if w in text:
+                    score += 2
+                elif fuzzy and _subsequence_score(text, w):
+                    score += 1
+                else:
+                    matched = False
+                    break
+            if matched:
+                scored.append((score, m))
+        scored.sort(key=lambda x: (-x[0], -x[1]["hits"]))
+        return [m for _, m in scored[:limit]]
+
     def list_all(self, project: Optional[str] = None,
                  tag: Optional[str] = None) -> list:
         items = self._data["memories"]
