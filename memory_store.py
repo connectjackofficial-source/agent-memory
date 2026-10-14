@@ -203,6 +203,48 @@ class MemoryStore:
             self._save()
         return removed
 
+    def merge(self, project: Optional[str] = None) -> dict:
+        """Merge substring-duplicate memories within a project.
+
+        If memory A's text is a substring of memory B's text (same
+        project), B absorbs A's tags and hit count and A is dropped —
+        the long entry is the more complete statement. Returns
+        {"merged": n, "kept": n}.
+        """
+        items = list(self._data["memories"])
+        others = [m for m in items
+                  if project and m.get("project") != project]
+        pool = [m for m in items
+                if not (project and m.get("project") != project)]
+        merged = 0
+        survivors = []
+        while pool:
+            base = pool.pop(0)
+            base_text = base.get("text", "").strip().lower()
+            absorbed, rest = [], []
+            for m in pool:
+                t = m.get("text", "").strip().lower()
+                if (base_text and t and t in base_text
+                        and t != base_text):
+                    absorbed.append(m)
+                else:
+                    rest.append(m)
+            if absorbed:
+                tags = set(base.get("tags") or [])
+                hits = base.get("hits", 0)
+                for m in absorbed:
+                    tags.update(m.get("tags") or [])
+                    hits += m.get("hits", 0)
+                    merged += 1
+                base["tags"] = sorted(tags)
+                base["hits"] = hits
+            survivors.append(base)
+            pool = rest
+        self._data["memories"] = others + survivors
+        if merged:
+            self._save()
+        return {"merged": merged, "kept": len(survivors)}
+
     def export_json(self) -> str:
         return json.dumps(self._data, indent=2, ensure_ascii=False)
 
