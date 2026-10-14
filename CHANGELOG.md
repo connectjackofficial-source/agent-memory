@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [1.5.0] - 2026-10-14
+
+- `merge()` — merge substring-duplicate memories within a project: the
+  longer entry absorbs the shorter one's tags and hit count
+
 ## [1.4.0] - 2026-10-13
 
 ### Added
