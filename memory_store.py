@@ -255,6 +255,26 @@ class MemoryStore:
         self._data["memories"].extend(data["memories"])
         self._save()
 
+    def prune(self, max_entries: int = 500,
+              project: Optional[str] = None) -> int:
+        """Keep only the newest *max_entries* memories, drop the oldest.
+
+        Useful as a nightly janitor: memories accrete fast, and old
+        low-value entries should age out before they bloat the store.
+        Returns the number of entries removed.
+        """
+        pool = [m for m in self._data["memories"]
+                if not (project and m.get("project") != project)]
+        others = [m for m in self._data["memories"]
+                  if project and m.get("project") != project]
+        if len(pool) <= max_entries:
+            return 0
+        pool.sort(key=lambda m: (m.get("created", ""), m.get("id", 0)))
+        keep = pool[-max_entries:]
+        self._data["memories"] = others + keep
+        self._save()
+        return len(pool) - max_entries
+
     def stats(self) -> dict:
         items = self._data["memories"]
         by_project = {}
