@@ -174,6 +174,47 @@ class MemoryStore:
             self._save()
         return changed
 
+    def forget_before(self, cutoff: str,
+                      project: Optional[str] = None) -> int:
+        """Drop memories created before *cutoff* (ISO datetime string).
+
+        Returns the number of removed entries. Entries with an
+        unparseable ``created`` field are kept untouched.
+        """
+        from datetime import datetime
+        try:
+            limit = datetime.fromisoformat(cutoff)
+        except ValueError:
+            raise ValueError(f"bad cutoff {cutoff!r}; use ISO format")
+        kept = []
+        removed = 0
+        for m in self._data["memories"]:
+            if project and m.get("project") != project:
+                kept.append(m)
+                continue
+            try:
+                created = datetime.fromisoformat(m.get("created", ""))
+            except ValueError:
+                kept.append(m)
+                continue
+            if created < limit:
+                removed += 1
+            else:
+                kept.append(m)
+        self._data["memories"] = kept
+        if removed:
+            self._save()
+        return removed
+
+    def move_memory(self, memory_id: int, project: str) -> bool:
+        """Move one memory into *project*; False when id is unknown."""
+        for m in self._data["memories"]:
+            if m["id"] == memory_id:
+                m["project"] = project
+                self._save()
+                return True
+        return False
+
     def clear_all(self, project: Optional[str] = None):
         if project:
             self._data["memories"] = [
