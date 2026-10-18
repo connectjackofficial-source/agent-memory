@@ -333,3 +333,51 @@ class MemoryStore:
             "by_tag": by_tag,
             "total_hits": total_hits,
         }
+
+    def rename_tag(self, old: str, new: str,
+                   project: Optional[str] = None) -> int:
+        """Rename a tag everywhere (optionally within one project).
+
+        Useful when a project renames a concept ("billing" -> "usage").
+        Returns the number of memories updated.
+        """
+        count = 0
+        for m in self._data["memories"]:
+            if project and m.get("project") != project:
+                continue
+            tags = m.get("tags") or []
+            if old in tags:
+                m["tags"] = [new if t == old else t for t in tags]
+                count += 1
+        if count:
+            self._save()
+        return count
+
+    def related(self, memory_id: int, limit: int = 5,
+                project: Optional[str] = None) -> list:
+        """Find memories related to *memory_id* by shared tags/text terms.
+
+        A cheap associative recall: entries sharing the most tags with
+        the target (text-word overlap breaks ties) rank highest.
+        """
+        target = next((m for m in self._data["memories"]
+                       if m.get("id") == memory_id), None)
+        if target is None:
+            return []
+        t_tags = set(target.get("tags") or [])
+        t_terms = set(re.findall(r"[a-z0-9]+", target.get("text", "").lower()))
+        scored = []
+        for m in self._data["memories"]:
+            if m.get("id") == memory_id:
+                continue
+            if project and m.get("project") != project:
+                continue
+            tags = set(m.get("tags") or [])
+            tag_overlap = len(t_tags & tags)
+            terms = set(re.findall(r"[a-z0-9]+", m.get("text", "").lower()))
+            term_overlap = len(t_terms & terms)
+            score = tag_overlap * 3 + term_overlap
+            if score > 0:
+                scored.append((score, m))
+        scored.sort(key=lambda sm: (-sm[0], sm[1].get("created", "")))
+        return [m for _, m in scored[:limit]]
